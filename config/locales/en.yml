@@ -38,3 +38,7 @@ en:
         deem cool enough to present. Feel free to browse the content. For
         business inquiries, questions or just fun, please contact me at
         <a class="text-blue font-bold" href="mailto:emric.mansson@gmail.com">emric.mansson@gmail.com</a>
+  layouts:
+    application:
+      home: 'Home'
+      blog: 'Blog'

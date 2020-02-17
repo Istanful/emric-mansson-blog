@@ -10,6 +10,15 @@
   </head>
 
   <body class="bg-gray-100">
+    <nav class="bg-white shadow-lg">
+      <div class="container">
+        <ul class="flex justify-end text-gray-900">
+          <%= nav_item t('.home'), root_path %>
+          <%= nav_item t('.blog'), '#' %>
+        </ul>
+      </div>
+    </nav>
+
     <%= yield %>
   </body>
 </html>
