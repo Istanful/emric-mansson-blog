@@ -9,16 +9,22 @@
     <%= javascript_pack_tag 'application', 'data-turbolinks-track': 'reload' %>
   </head>
 
-  <body>
-    <nav class="bg-white shadow-lg relative">
-      <div class="container">
-        <ul class="flex justify-end text-gray-900">
-          <%= nav_item t('.home'), root_path %>
-          <%= nav_item t('.blog'), '#' %>
-        </ul>
-      </div>
-    </nav>
+  <body class="flex flex-col h-screen">
+    <div class="flex-1">
+      <nav class="bg-white shadow-lg relative">
+        <div class="container">
+          <ul class="flex justify-end text-gray-900">
+            <%= nav_item t('.home'), root_path %>
+            <%= nav_item t('.blog'), '#' %>
+          </ul>
+        </div>
+      </nav>
 
-    <%= yield %>
+      <%= yield %>
+    </div>
+
+    <footer class="flex-shrink-0 h-48 bg-center bg-blue"
+            style="background-image: url(<%= image_path 'banner-image.jpg' %>)">
+    </footer>
   </body>
 </html>
