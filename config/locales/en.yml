@@ -32,12 +32,13 @@
 en:
   home:
     show:
+      go_to_blog_html: 'Go to blog &#8594;'
       title: "Who goes there?"
       introduction_html: |
         My name is Emric Månsson and I code. Here is where you will find stuff I
         deem cool enough to present. Feel free to browse the content. For
         business inquiries, questions or just fun, please contact me at
-        <a class="text-blue font-bold" href="mailto:emric.mansson@gmail.com">emric.mansson@gmail.com</a>
+        <a class="text-blue" href="mailto:emric.mansson@gmail.com">emric.mansson@gmail.com</a>
   layouts:
     application:
       home: 'Home'
