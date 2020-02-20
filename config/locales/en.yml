@@ -43,3 +43,6 @@ en:
     application:
       home: 'Home'
       blog: 'Blog'
+  posts:
+    index:
+      read_more_html: 'Read more &#8594;'

@@ -1,0 +1,11 @@
+<div class="bg-gray-100 flex-column flex h-full">
+  <div class="container p-8">
+    <% @posts.each do |post| %>
+      <div class="bg-white border p-8 shadow-md rounded-lg">
+        <h3 class="text-gray-800 text-2xl mb-3"><%= post.title %></h3>
+        <%= block_content post.introduction_text %>
+        <%= link_to t('.read_more_html'), post_path(post), class: 'text-blue' %>
+      </div>
+    <% end %>
+  </div>
+</div>
