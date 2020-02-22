@@ -1,15 +1,17 @@
 # frozen_string_literal: true
 
 module BlockContent
-  extend ActionView::Helpers::OutputSafetyHelper
+  class << self
+    include ActionView::Helpers::OutputSafetyHelper
 
-  def self.render(content, mark_defs)
-    contents = Array.wrap(content)
-    node_list = contents.map do |content|
-      renderer = "BlockContent::#{content["_type"].camelize}".constantize
-      renderer.new(content, mark_defs).render
+    def render(content, mark_defs)
+      contents = Array.wrap(content)
+      renderers = contents.inject([]) do |acc, content|
+        renderer = "BlockContent::#{content["_type"].camelize}".constantize
+        [*acc, renderer.new(acc, content, mark_defs)]
+      end
+
+      safe_join renderers.map(&:render)
     end
-
-    safe_join node_list
   end
 end

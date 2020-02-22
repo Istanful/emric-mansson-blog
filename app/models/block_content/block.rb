@@ -2,14 +2,20 @@ class BlockContent::Block
   include BlockContent::Base
 
   def render
-    if list_item.present?
-      return BlockContent::ListItem.new(content, mark_defs).render
+    return "" if list_item.present?
+
+    if previous&.list_item.present?
+      return BlockContent::List.new(previous_renderers, content, mark_defs).render
     end
 
     style.new(rendered_children).render
   end
 
   private
+
+  def previous
+    previous_renderers.last
+  end
 
   def style
     "Style::#{content["style"].camelize}".constantize
@@ -25,9 +31,5 @@ class BlockContent::Block
 
   def mark_defs
     content["markDefs"]
-  end
-
-  def list_item
-    content["listItem"]
   end
 end
