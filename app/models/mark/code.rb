@@ -10,6 +10,6 @@ class Mark::Code
   end
 
   def render
-    content_tag :code, text
+    content_tag :code, text, class: 'mb-5 bg-gray-200 p-5 rounded-md block text-gray-700'
   end
 end
