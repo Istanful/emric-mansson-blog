@@ -5,11 +5,16 @@ class BlockContent::List
 
   TAG_MAP = {
     "number" => :ol,
-    "buller" => :ul
+    "bullet" => :ul
+  }.freeze
+
+  STYLE_CLASS_MAP = {
+    "number" => "list-decimal list-inside",
+    "bullet" => "list-disc list-inside",
   }.freeze
 
   def render
-    content_tag tag, safe_join(list_items)
+    content_tag tag, safe_join(list_items), class: classes
   end
 
   private
@@ -27,6 +32,13 @@ class BlockContent::List
       renderer.content,
       mark_defs
     ).render
+  end
+
+  def classes
+    [
+      'mb-5',
+      STYLE_CLASS_MAP.fetch(previous.list_item, STYLE_CLASS_MAP["bullet"])
+    ].join(' ')
   end
 
   def tag
