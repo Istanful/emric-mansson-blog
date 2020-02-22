@@ -50,4 +50,8 @@ en:
     show:
       heading: |
         Unfortunately we could not find what you were looking for. :(
+  internal_server_errors:
+    show:
+      heading: |
+        Something wen't terribly wrong! We're sorry for that. :(
 
