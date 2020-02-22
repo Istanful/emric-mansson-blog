@@ -2,6 +2,6 @@
 
 module BlockContentHelper
   def block_content(content)
-    safe_join BlockContent.render(content)
+    safe_join BlockContent.render(content, [])
   end
 end

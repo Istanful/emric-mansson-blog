@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-class BlockContent::Code
+class BlockContent::Image
   include BlockContent::Base
 
   def render
-    content_tag :pre, content["code"]
+    content_tag :span, content["text"]
   end
 end

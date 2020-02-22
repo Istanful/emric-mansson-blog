@@ -15,4 +15,20 @@ class Post
     json["body"].select { |b| b["style"] == "normal" }
                 .first
   end
+
+  def id
+    json["_id"]
+  end
+
+  def slug
+    json.fetch("slug", {}).fetch("current", "")
+  end
+
+  def body
+    json["body"]
+  end
+
+  def main_image
+    json["mainImage"]
+  end
 end

@@ -10,6 +10,6 @@ class Style::H2
   end
 
   def render
-    content_tag :h2, children
+    content_tag :h2, children, class: 'text-gray-900 text-3xl mb-3'
   end
 end

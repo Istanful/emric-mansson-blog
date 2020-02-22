@@ -1,14 +1,11 @@
 class BlockContent::Block
-  include ActionView::Helpers::OutputSafetyHelper
-  include ActionView::Helpers::TagHelper
-
-  attr_reader :content
-
-  def initialize(content)
-    @content = content
-  end
+  include BlockContent::Base
 
   def render
+    if list_item.present?
+      return BlockContent::ListItem.new(content, mark_defs).render
+    end
+
     style.new(rendered_children).render
   end
 
@@ -20,7 +17,7 @@ class BlockContent::Block
 
   def rendered_children
     mapped = children.map do |child|
-      BlockContent.render(child)
+      BlockContent.render(child, mark_defs)
     end
 
     safe_join mapped
@@ -28,5 +25,13 @@ class BlockContent::Block
 
   def children
     content["children"]
+  end
+
+  def mark_defs
+    content["markDefs"]
+  end
+
+  def list_item
+    content["listItem"]
   end
 end
