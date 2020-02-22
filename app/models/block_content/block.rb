@@ -16,11 +16,7 @@ class BlockContent::Block
   end
 
   def rendered_children
-    mapped = children.map do |child|
-      BlockContent.render(child, mark_defs)
-    end
-
-    safe_join mapped
+    BlockContent.render(children, mark_defs)
   end
 
   def children
