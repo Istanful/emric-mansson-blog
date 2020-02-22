@@ -5,6 +5,7 @@ module SanityRuby
 
   class Configuration
     attr_accessor :project_id
+    attr_accessor :dataset
   end
 
   def self.configure

@@ -2,8 +2,15 @@
 
 class BlockContent::Image
   include BlockContent::Base
+  include ActionView::Helpers::AssetTagHelper
 
   def render
-    content_tag :span, content["text"]
+    image_tag SanityImageUrl.for(reference), class: 'w-full mb-5'
+  end
+
+  private
+
+  def reference
+    content.fetch("asset", {}).fetch("_ref", "")
   end
 end

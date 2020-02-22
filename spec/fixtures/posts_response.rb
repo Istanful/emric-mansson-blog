@@ -1,6 +1,6 @@
-POSTS_RESPONSE = {"ms"=>24,
+POSTS_RESPONSE = {"ms"=>14,
  "query"=>
-  "*[slug.current=='test-post']{      title,body,'mainImageUrl': mainImage.asset->url    }",
+  "*[slug.current=='test-post']{      title,      body,      slug,      'mainImageUrl': mainImage.asset->url    }",
  "result"=>
   [{"body"=>
      [{"_key"=>"68edf4f311ea",
@@ -74,8 +74,7 @@ POSTS_RESPONSE = {"ms"=>24,
           "_type"=>"span",
           "marks"=>[],
           "text"=>
-           " buffalo pig leberkas meatball. Corned beef turducken buffalo chicken, flank bacon capicola. Tri-tip hamburger biltong cow chislic. Ham pancetta turducken sirloin, chislic prosciutto frankfurter. Rump shank burgdoggen pork loin. Spare
- ribs pig beef ribs, ground round t-bone drumstick corned beef picanha leberkas cow jowl."}],
+           " buffalo pig leberkas meatball. Corned beef turducken buffalo chicken, flank bacon capicola. Tri-tip hamburger biltong cow chislic. Ham pancetta turducken sirloin, chislic prosciutto frankfurter. Rump shank burgdoggen pork loin. Spare ribs pig beef ribs, ground round t-bone drumstick corned beef picanha leberkas cow jowl."}],
        "markDefs"=>
         [{"_key"=>"bdd6b0c72b57",
           "_type"=>"link",
@@ -197,4 +196,5 @@ POSTS_RESPONSE = {"ms"=>24,
        "style"=>"normal"}],
     "mainImageUrl"=>
      "https://cdn.sanity.io/images/svs9bwgm/production/09e3932b21654e66ed13cca15fec96dd39c51c11-1680x224.jpg",
+    "slug"=>{"_type"=>"slug", "current"=>"test-post"},
     "title"=>"Test post"}]}
