@@ -5,7 +5,7 @@ class BlockContent::Image
   include ActionView::Helpers::AssetTagHelper
 
   def render
-    image_tag SanityImageUrl.for(reference), class: 'w-full mb-5'
+    image_tag SanityImageUrl.for(reference), class: 'w-full mb-5 rounded-md'
   end
 
   private
