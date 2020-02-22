@@ -6,7 +6,7 @@ class PostRepository
   end
 
   def public
-    client.query('production', '*[_type=="post"]')["result"]
+    client.query(dataset, '*[_type=="post"]')["result"]
           .map { |json| Post.new(json) }
   end
 
@@ -17,7 +17,13 @@ class PostRepository
       slug,
       'mainImageUrl': mainImage.asset->url
     }"
-    json = client.query('production', query)["result"]
+    json = client.query(dataset, query)["result"]
     Post.new(json[0])
+  end
+
+  private
+
+  def dataset
+    SanityRuby.configuration.dataset
   end
 end
