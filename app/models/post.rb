@@ -28,7 +28,7 @@ class Post
     json["body"]
   end
 
-  def main_image
-    json["mainImage"]
+  def mainImageUrl
+    json["mainImageUrl"]
   end
 end

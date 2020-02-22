@@ -1,12 +1,8 @@
-POSTS_RESPONSE = {"ms"=>7,
- "query"=>"*[slug.current=='test-post']",
+POSTS_RESPONSE = {"ms"=>24,
+ "query"=>
+  "*[slug.current=='test-post']{      title,body,'mainImageUrl': mainImage.asset->url    }",
  "result"=>
-  [{"_createdAt"=>"2020-02-20T18:31:24Z",
-    "_id"=>"8069c0ad-5411-4da3-8b68-32a4e71f8265",
-    "_rev"=>"3gcz0125q2ZNJk3Y1qbduS",
-    "_type"=>"post",
-    "_updatedAt"=>"2020-02-22T12:55:29Z",
-    "body"=>
+  [{"body"=>
      [{"_key"=>"68edf4f311ea",
        "_type"=>"block",
        "children"=>
@@ -78,7 +74,8 @@ POSTS_RESPONSE = {"ms"=>7,
           "_type"=>"span",
           "marks"=>[],
           "text"=>
-           " buffalo pig leberkas meatball. Corned beef turducken buffalo chicken, flank bacon capicola. Tri-tip hamburger biltong cow chislic. Ham pancetta turducken sirloin, chislic prosciutto frankfurter. Rump shank burgdoggen pork loin. Spare ribs pig beef ribs, ground round t-bone drumstick corned beef picanha leberkas cow jowl."}],
+           " buffalo pig leberkas meatball. Corned beef turducken buffalo chicken, flank bacon capicola. Tri-tip hamburger biltong cow chislic. Ham pancetta turducken sirloin, chislic prosciutto frankfurter. Rump shank burgdoggen pork loin. Spare
+ ribs pig beef ribs, ground round t-bone drumstick corned beef picanha leberkas cow jowl."}],
        "markDefs"=>
         [{"_key"=>"bdd6b0c72b57",
           "_type"=>"link",
@@ -198,10 +195,6 @@ POSTS_RESPONSE = {"ms"=>7,
         [{"_key"=>"29b686d414730", "_type"=>"span", "marks"=>[], "text"=>""}],
        "markDefs"=>[],
        "style"=>"normal"}],
-    "mainImage"=>
-     {"_type"=>"image",
-      "asset"=>
-       {"_ref"=>"image-09e3932b21654e66ed13cca15fec96dd39c51c11-1680x224-jpg",
-        "_type"=>"reference"}},
-    "slug"=>{"_type"=>"slug", "current"=>"test-post"},
+    "mainImageUrl"=>
+     "https://cdn.sanity.io/images/svs9bwgm/production/09e3932b21654e66ed13cca15fec96dd39c51c11-1680x224.jpg",
     "title"=>"Test post"}]}

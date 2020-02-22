@@ -11,7 +11,10 @@ class PostRepository
   end
 
   def find_by_slug(slug)
-    json = client.query('production', "*[slug.current=='#{slug}']")["result"][0]
-    Post.new(json)
+    query = "*[slug.current=='#{slug}']{
+      title,body,'mainImageUrl': mainImage.asset->url
+    }"
+    json = client.query('production', query)["result"]
+    Post.new(json[0])
   end
 end
