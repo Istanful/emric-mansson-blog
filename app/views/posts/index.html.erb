@@ -1,5 +1,5 @@
 <div class="bg-gray-100 flex-column flex h-full">
-  <div class="container p-8">
+  <%= container do %>
     <% @posts.each do |post| %>
       <div class="bg-white border p-8 shadow-md rounded-lg mb-5">
         <h3 class="text-gray-800 text-2xl mb-3"><%= post.title %></h3>
@@ -7,5 +7,5 @@
         <%= link_to t('.read_more_html'), post_path(slug: post.slug), class: 'text-blue' %>
       </div>
     <% end %>
-  </div>
+  <% end %>
 </div>

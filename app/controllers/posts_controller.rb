@@ -11,5 +11,7 @@ class PostsController < ApplicationController
 
   def show
     @post = PostRepository.new(BACKEND).find_by_slug(params[:slug])
+
+    return render 'not_founds/show' if @post.blank?
   end
 end

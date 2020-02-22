@@ -4,4 +4,6 @@ Rails.application.routes.draw do
   resources :posts, only: %i[index]
 
   get "posts/:slug", to: "posts#show", as: :post
+
+  resource :not_found, only: %i[show]
 end

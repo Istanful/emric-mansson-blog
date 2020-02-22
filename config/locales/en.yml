@@ -46,3 +46,8 @@ en:
   posts:
     index:
       read_more_html: 'Read more &#8594;'
+  not_founds:
+    show:
+      heading: |
+        Unfortunately we could not find what you were looking for. :(
+
