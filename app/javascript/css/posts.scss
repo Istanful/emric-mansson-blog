@@ -1,0 +1,51 @@
+.post {
+  h1 {
+    @apply text-gray-900 text-4xl mb-3;
+  }
+
+  h2 {
+    @apply text-gray-900 text-3xl mb-3;
+  }
+
+  h3 {
+    @apply text-gray-900 text-2xl mb-3;
+  }
+
+  h4 {
+    @apply text-gray-900 text-xl mb-3;
+  }
+
+  h5 {
+    @apply text-gray-900 mb-3;
+  }
+
+  h6 {
+    @apply text-gray-900 mb-3;
+  }
+
+  p {
+    @apply text-gray-800 mb-5 leading-relaxed;
+  }
+
+  li > ul,
+  li > ol {
+    @apply ml-5 mb-0;
+  }
+
+  ul {
+    @apply list-decimal list-inside mb-5;
+  }
+
+  ol {
+    @apply list-disc list-inside mb-5;
+  }
+
+  pre,
+  img {
+    @apply mb-5 rounded-md;
+  }
+
+  blockquote {
+    @apply p-5 bg-gray-200 text-gray-700 rounded-md;
+  }
+}

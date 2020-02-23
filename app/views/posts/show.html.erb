@@ -1,6 +1,8 @@
 <%= banner @post.mainImageUrl %>
 
 <%= container do %>
-  <%= heading_1 @post.title %>
-  <%= block_content @post.body %>
+  <div class="post">
+    <%= heading_1 @post.title %>
+    <%= block_content @post.body %>
+  </div>
 <% end %>
