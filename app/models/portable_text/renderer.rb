@@ -13,7 +13,7 @@ module PortableText::Renderer
   end
 
   def next
-    [*renderers]
+    [*renderers, self]
   end
 
   def render
