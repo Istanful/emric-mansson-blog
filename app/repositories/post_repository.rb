@@ -16,6 +16,7 @@ class PostRepository
       title,
       body,
       slug,
+      publishedAt,
       'mainImageUrl': mainImage.asset->url
     }"
     json = client.query(dataset, query)["result"]

@@ -1,8 +1,17 @@
-<%= banner @post.mainImageUrl %>
+<header>
+  <%= banner @post.mainImageUrl %>
+  <div class="container pt-8 text-center">
+    <%= heading_1 @post.title %>
+    <p class="text-gray-600">
+      <%= t('.published_at', date: @post.published_at.strftime("%F")) %>
+      <%= t('.published_by') %>
+      <%= link_to 'Emric Månsson', root_path, class: 'text-blue' %>
+    </p>
+  </div>
+</header>
 
 <%= container do %>
-  <div class="post">
-    <%= heading_1 @post.title %>
+  <article class="post">
     <%= block_content @post.body %>
-  </div>
+  </article>
 <% end %>

@@ -46,6 +46,9 @@ en:
   posts:
     index:
       read_more_html: 'Read more &#8594;'
+    show:
+      published_at: 'Published %{date}'
+      published_by: 'by'
   not_founds:
     show:
       heading: |

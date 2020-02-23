@@ -31,4 +31,8 @@ class Post
   def mainImageUrl
     json["mainImageUrl"]
   end
+
+  def published_at
+    Time.parse(json["publishedAt"])
+  end
 end

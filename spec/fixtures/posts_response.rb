@@ -1,6 +1,6 @@
-POSTS_RESPONSE = {"ms"=>28,
+POSTS_RESPONSE = {"ms"=>21,
  "query"=>
-  "*[slug.current=='test-post']{      title,      body,      slug,      'mainImageUrl': mainImage.asset->url    }",
+  "*[slug.current=='test-post']{      title,      body,      slug,      publishedAt,      'mainImageUrl': mainImage.asset->url    }",
  "result"=>
   [{"body"=>
      [{"_key"=>"f86561be098d",
@@ -198,5 +198,6 @@ POSTS_RESPONSE = {"ms"=>28,
        "style"=>"normal"}],
     "mainImageUrl"=>
      "https://cdn.sanity.io/images/svs9bwgm/production/09e3932b21654e66ed13cca15fec96dd39c51c11-1680x224.jpg",
+    "publishedAt"=>"2020-02-22T00:00:00.000Z",
     "slug"=>{"_type"=>"slug", "current"=>"test-post"},
     "title"=>"Test post"}]}
