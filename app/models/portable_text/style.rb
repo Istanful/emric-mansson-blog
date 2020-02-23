@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-class PortableText::Style::H1
+module PortableText::Style
   include ActionView::Helpers::TagHelper
+  include ActionView::Helpers::OutputSafetyHelper
 
   attr_reader :children
 
@@ -10,6 +11,6 @@ class PortableText::Style::H1
   end
 
   def render
-    content_tag :h1, children, class: 'text-gray-900 text-4xl mb-3'
+    ""
   end
 end
