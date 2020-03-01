@@ -4,6 +4,6 @@ class PortableText::Style::H6
   include PortableText::Style
 
   def render
-    content_tag :h6, children
+    content_tag :h6, children, id: text_id
   end
 end

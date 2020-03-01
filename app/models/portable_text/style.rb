@@ -13,4 +13,13 @@ module PortableText::Style
   def render
     ""
   end
+
+  private
+
+  def text_id
+    Nokogiri::HTML(children).content
+                            .downcase
+                            .split(/\s/)
+                            .join('-')
+  end
 end
