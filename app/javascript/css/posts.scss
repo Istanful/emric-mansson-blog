@@ -27,17 +27,21 @@
     @apply text-gray-800 mb-5 leading-relaxed;
   }
 
+  a {
+    @apply text-blue;
+  }
+
   li > ul,
   li > ol {
     @apply ml-5 mb-0;
   }
 
   ul {
-    @apply list-decimal list-inside mb-5;
+    @apply list-disc list-inside mb-5;
   }
 
   ol {
-    @apply list-disc list-inside mb-5;
+    @apply list-decimal list-inside mb-5;
   }
 
   pre,
