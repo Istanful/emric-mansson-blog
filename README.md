@@ -1,24 +1,26 @@
-# README
+# Emric Månsson blog
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+This is the server for the Emric Månsson blog. It fetches the posts from the
+Sanity hosted app and renders the HTML.
 
-Things you may want to cover:
+## Getting started
 
-* Ruby version
+Install dependencies.
 
-* System dependencies
+```bash
+bundle
+```
 
-* Configuration
+Install JavaScript dependencies.
 
-* Database creation
+```bash
+rails yarn:install
+```
 
-* Database initialization
+Start development server.
 
-* How to run the test suite
+```bash
+rails s
+```
 
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+Access the site at [http://localhost:3000](http://localhost:3000)
