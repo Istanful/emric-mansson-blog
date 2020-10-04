@@ -24,3 +24,17 @@ rails s
 ```
 
 Access the site at [http://localhost:3000](http://localhost:3000)
+
+## Deployment
+
+Add heroku remote.
+
+```bash
+heroku git:remote -a emric-mansson-blog
+```
+
+Push to the heroku remote.
+
+```bash
+git push heroku master
+```
