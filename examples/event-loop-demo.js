@@ -1,25 +1,54 @@
-document.innerHTML = "";
-const scene = document.createElement("div");
-scene.id = "scene";
-document.body.appendChild(scene);
-
-const COL_SIZE = 100;
-const DEFAULT_FRAME_DURATION = 200;
-const GUTTER = 25;
+const UNIT_SIZE = 65;
+const BLOCK_WIDTH = 6;
+const BLOCK_HEIGHT = 1.6;
+const DEFAULT_FRAME_DURATION = 1000;
+const GUTTER = 15;
+const BORDER_RADIUS = 10;
+const PADDING = 15;
 const EASING = "ease-out";
 const ROW_COUNT = 6;
+const CODE_BG_COLOR = "#31373e";
+const BACKGROUND_COLOR = "#282c34";
+const ROBOT_COLOR = "#98c379";
+const THREAD_NAMES = ["mainThread", "taskQueue", "renderSteps", "microTasks"];
+const COL_COUNT = THREAD_NAMES.length;
+const CURRENT_EXAMPLE = parseInt(
+  new URLSearchParams(window.location.search).get("exampleIndex") || "0"
+);
+
+const scene = document.createElement("div");
+scene.id = "scene";
+scene.style.left = `${
+  window.innerWidth / 2 - (COL_COUNT * UNIT_SIZE * BLOCK_WIDTH) / 2
+}px`;
+scene.style.position = "absolute";
+
+document.body.appendChild(scene);
+document.body.style.background = BACKGROUND_COLOR;
+
+function paintItem() {
+  return {
+    properties: {
+      innerText: "paint",
+      background: "#c679dc",
+      color: BACKGROUND_COLOR,
+    },
+  };
+}
 
 class Stack {
-  constructor(items, id) {
+  constructor(items, id = "mainThread", bgColor = CODE_BG_COLOR) {
     this.id = id;
+    this.bgColor = bgColor;
     this.items = items.map((item, i) => {
       return {
         ...item,
+        id: this.nextItemId(),
         properties: {
           left: this.left,
           top: ROW_COUNT - i,
           transform: "scale(0)",
-          background: "#b788d7",
+          background: bgColor,
           ...item.properties,
         },
       };
@@ -27,169 +56,147 @@ class Stack {
   }
 
   get left() {
-    return (
-      ["mainThread", "taskQueue", "renderSteps", "microTasks"].indexOf(
-        this.id
-      ) + 1
-    );
+    return THREAD_NAMES.indexOf(this.id);
   }
 
   get initialFrameItems() {
-    return this.items.reduce((memo, item, i) => {
+    const itemsProperties = this.items.reduce((memo, item) => {
       return {
         ...memo,
-        [`${this.id}${i}`]: { ...item.properties },
+        [item.id]: { ...item.properties },
       };
     }, {});
+    return {
+      ...itemsProperties,
+      [`${this.id}Label`]: {
+        innerText: this.id,
+        top: 0,
+        left: this.left,
+        fontSize: "1.5rem",
+        textAlign: "center",
+      },
+    };
   }
 
-  get fillFrames() {
-    return this.items.reduce((memo, item, i) => {
-      return [
-        ...memo,
-        {
-          items: {
-            [`${this.id}${i}`]: { transform: "scale(1)" },
+  fillFrames(items = this.items) {
+    return items.reduce(
+      (memo, item) => {
+        return [
+          ...memo,
+          {
+            duration: 200,
+            items: {
+              [item.id]: { ...item.properties, transform: "scale(1)" },
+            },
           },
-        },
-      ];
-    }, []);
+        ];
+      },
+      [
+        items.reduce(
+          (memo, item) => ({
+            ...memo,
+            duration: 50,
+            items: {
+              ...memo.items,
+              [item.id]: { ...item.properties, transform: "scale(0)" },
+            },
+          }),
+          { items: {} }
+        ),
+      ].filter((frame) => Object.keys(frame.items).length > 0)
+    );
   }
 
   shiftFrames(eventLoop) {
     return this.consumeFrames(eventLoop, 1);
   }
 
-  appendFrames(frames) {
-    const left = this.left;
+  nextItemId() {
+    this.currentItemId = this.currentItemId || 0;
+    this.currentItemId++;
+    return `${this.id}${this.currentItemId}`;
+  }
 
-    this.items = [
-      ...this.items,
-      ...frames.map((frame, i) => {
-        return {
-          ...frame,
-          properties: {
-            left,
-            top: ROW_COUNT - i,
-            transform: "scale(0)",
-            background: "#b788d7",
-            ...frame.properties,
-          },
-        };
-      }),
-    ];
+  appendItem(item) {
+    const newItem = {
+      ...item,
+      id: this.nextItemId(),
+      properties: {
+        left: this.left,
+        top: ROW_COUNT - this.items.length,
+        transform: "scale(0)",
+        background: this.bgColor,
+        ...item.properties,
+      },
+    };
+    this.items = [...this.items, newItem];
+    return newItem;
+  }
 
-    return this.items.reduce((memo, item, i) => {
-      return [
-        ...memo,
-        {
-          items: {
-            [`${this.id}${i}`]: item.properties,
-          },
-        },
-        {
-          items: {
-            [`${this.id}${i}`]: { transform: "scale(1)" },
-          },
-        },
-      ];
-    }, []);
+  appendFrames(items) {
+    const newItems = items.map((items) => this.appendItem(items));
+    return this.fillFrames(newItems);
   }
 
   get hasTasks() {
     return this.items.length > 0;
   }
 
-  consumeFrames(eventLoop, count = this.items.length) {
-    const frames = this.items.slice(0, count).reduce((memo, _, frameI) => {
-      let newFrames = [
-        {
-          items: {
-            ...this.items.reduce((memo, item, i) => {
-              let props = {
-                ...memo,
-                [`${this.id}${i}`]: {
-                  top: item.properties.top + frameI + 1,
-                },
-              };
+  consumeOneFrames(eventLoop) {
+    const consumedItem = this.items[0];
 
-              if (i === frameI) {
-                props[`${this.id}${i}`].transform = "scale(0)";
-              }
+    if (!consumedItem) {
+      return [];
+    }
 
-              return props;
-            }, {}),
-          },
-        },
-      ];
-
-      if (this.items[frameI].enqueues) {
-        const enqueueingItem = this.items[frameI];
-        const [threadName, appendedFrames] = Object.entries(
-          enqueueingItem.enqueues
-        )[0];
-        newFrames = [
-          ...newFrames,
-          ...eventLoop.threads[threadName].appendFrames(appendedFrames),
-        ];
-      }
-
-      return [...memo, ...newFrames];
-    }, []);
-
-    this.items = this.items.slice(count);
-
-    return frames;
-  }
-}
-
-class RenderStack extends Stack {
-  appendFrames(frames) {
-    const threads = eventLoop.threads;
-    const left = Object.keys(threads).indexOf(this.id) + 1;
-
-    this.items = [
-      ...frames.map((frame, i) => {
-        return {
-          ...frame,
-          properties: {
-            left,
-            top: ROW_COUNT - i,
-            transform: "scale(0)",
-            background: "#b788d7",
-            ...frame.properties,
-          },
-        };
-      }),
-      ...this.items,
+    let newFrames = [
       {
-        properties: {
-          left,
-          transform: "scale(0)",
-          background: "#b788d7",
-          innerText: "Paint",
-          top: ROW_COUNT - frames.length,
+        items: {
+          ...this.items.reduce((memo, item, i) => {
+            let props = {
+              ...memo,
+              [item.id]: {
+                top: item.properties.top + 1,
+              },
+            };
+
+            this.items[i].properties.top = item.properties.top + 1;
+
+            if (item.id === consumedItem.id) {
+              props[item.id].transform = "scale(0)";
+            }
+
+            return props;
+          }, {}),
         },
       },
     ];
 
-    return this.items.reduce((memo, item, i) => {
-      return [
-        ...memo,
-        {
-          items: {
-            [`${this.id}${i}`]: item.properties,
-          },
-        },
-        {
-          items: {
-            [`${this.id}${i}`]: { transform: "scale(1)" },
-          },
-        },
+    this.items.splice(0, 1);
+
+    if (consumedItem.enqueues) {
+      const [threadName, appendedFrames] = Object.entries(
+        consumedItem.enqueues
+      )[0];
+      newFrames = [
+        ...newFrames,
+        ...eventLoop.threads[threadName].appendFrames(appendedFrames),
       ];
-    }, []);
+    }
+
+    return newFrames;
+  }
+
+  consumeFrames(eventLoop, count = this.items.length) {
+    return Array(count)
+      .fill(null)
+      .reduce((frames) => {
+        return [...frames, ...this.consumeOneFrames(eventLoop)];
+      }, []);
   }
 }
+
+class RenderStack extends Stack {}
 
 class Robot {
   constructor(stacks) {
@@ -197,9 +204,9 @@ class Robot {
     this.props = {
       left: 0,
       top: ROW_COUNT + 1,
-      background: "#88ddfe",
+      background: ROBOT_COLOR,
       zIndex: 1000,
-      transitionTimingFunction: "ease-out",
+      transitionTimingFunction: "ease-in-out",
     };
   }
 
@@ -208,12 +215,13 @@ class Robot {
   }
 
   moveToStackFrame(name) {
-    const index = Object.keys(this.stacks).indexOf(name) + 1;
+    const stack = this.stacks[name];
 
     return {
       items: {
         robot: {
-          left: index,
+          transitionTimingFunction: "ease-in-out",
+          left: stack.left,
         },
       },
     };
@@ -228,40 +236,33 @@ class Robot {
   }
 
   get loopAroundFrames() {
+    const durationPerUnit = DEFAULT_FRAME_DURATION / 3;
+
     return [
       {
-        duration: 250,
+        duration: durationPerUnit,
         items: {
           robot: {
-            left: this.stacksArray.length + 1,
+            top: ROW_COUNT + 2,
             transitionTimingFunction: "ease-in",
           },
         },
       },
       {
-        duration: 250,
+        duration: durationPerUnit * this.stacksArray.length,
         items: {
           robot: {
-            top: ROW_COUNT + 2,
-            transitionTimingFunction: "linear",
-          },
-        },
-      },
-      {
-        duration: 250,
-        items: {
-          robot: {
-            duration: (this.stacksArray.length + 2) * 250,
+            transitionTimingFunction: "ease-in-out",
             left: 0,
           },
         },
       },
       {
         items: {
+          duration: durationPerUnit,
           robot: {
             left: 0,
             top: ROW_COUNT + 1,
-            background: "#88ddfe",
             transitionTimingFunction: "ease-out",
           },
         },
@@ -304,9 +305,16 @@ class EventLoop {
         duration: 500,
         items: {
           ...this.mainThread.initialFrameItems,
+          ...this.taskQueue.initialFrameItems,
+          ...this.renderSteps.initialFrameItems,
+          ...this.microTasks.initialFrameItems,
           robot: this.robot.initialFrameItem,
         },
       },
+      ...this.mainThread.fillFrames(),
+      ...this.taskQueue.fillFrames(),
+      ...this.renderSteps.fillFrames(),
+      ...this.microTasks.fillFrames(),
       ...this.consumeFrames,
     ];
   }
@@ -320,11 +328,8 @@ class EventLoop {
     };
 
     while (hasTasks()) {
-      debugger;
       frames = [
         ...frames,
-        ...this.mainThread.fillFrames,
-        this.robot.moveToStackFrame("mainThread"),
         ...this.consumeMainThreadFrames,
         this.robot.moveToStackFrame("taskQueue"),
         ...this.shiftTaskQueueFrames,
@@ -348,7 +353,13 @@ class EventLoop {
   }
 
   get consumeMainThreadFrames() {
-    return this.mainThread.consumeFrames(this);
+    const frames = this.mainThread.consumeFrames(this);
+
+    if (this.mainThread.hasTasks) {
+      return [...frames, ...this.consumeMainThreadFrames];
+    }
+
+    return frames;
   }
 
   get shiftTaskQueueFrames() {
@@ -356,15 +367,114 @@ class EventLoop {
   }
 }
 
-const eventLoop = new EventLoop({
-  mainThread: new Stack(
-    [
+const EXAMPLES = [
+  new EventLoop({
+    mainThread: new Stack([
+      { properties: { innerText: 'console.log("Bring water to boil.");' } },
       {
-        properties: { innerText: 'console.log("Shopping for ingredients.");' },
+        properties: {
+          innerText: 'console.log("Put in noodles and spice.");',
+        },
+      },
+      { properties: { innerText: 'console.log("Wait for 5 minutes.");' } },
+      { properties: { innerText: 'console.log("Serve noodles!");' } },
+    ]),
+  }),
+  new EventLoop({
+    mainThread: new Stack([
+      { properties: { innerText: 'console.log("Bring water to boil.");' } },
+      {
+        properties: { innerText: 'console.log("Put in noodles and spice.");' },
       },
       {
         properties: {
-          innerText: 'fetch("http://grocery-store/shopping-list")',
+          innerText:
+            "setTimeout(() => {\n" +
+            '\t\tconsole.log("Serve noodles!");\n' +
+            "}, 5 * 60 * 1000);",
+        },
+        enqueues: {
+          taskQueue: [
+            { properties: { innerText: 'console.log("Serve noodles!");' } },
+          ],
+        },
+      },
+      {
+        properties: {
+          innerText: 'console.log("Browse the interwebs.");',
+        },
+      },
+    ]),
+  }),
+  new EventLoop({
+    taskQueue: new Stack(
+      [
+        {
+          properties: { innerText: "moveBox();" },
+          enqueues: {
+            taskQueue: [
+              {
+                properties: { innerText: "moveBox();" },
+                enqueues: {
+                  renderSteps: [paintItem()],
+                },
+              },
+            ],
+          },
+        },
+      ],
+      "taskQueue"
+    ),
+  }),
+  new EventLoop({
+    renderSteps: new Stack(
+      [
+        {
+          properties: { innerText: "moveBox();" },
+          enqueues: {
+            renderSteps: [
+              {
+                properties: { innerText: "moveBox();" },
+                enqueues: {
+                  renderSteps: [
+                    { properties: { innerText: "moveBox();" } },
+                    paintItem(),
+                  ],
+                },
+              },
+              paintItem(),
+            ],
+          },
+        },
+        paintItem(),
+      ],
+      "renderSteps"
+    ),
+  }),
+  new EventLoop({
+    mainThread: new Stack([
+      { properties: { innerText: 'console.log("Fetching articles...");' } },
+      {
+        properties: { innerText: 'fetch("http://my-api.com/posts");' },
+        enqueues: {
+          microTasks: [
+            { properties: { innerText: "renderPosts(response);" } },
+            { properties: { innerText: 'console.log("Fetched articles.");' } },
+          ],
+        },
+      },
+    ]),
+  }),
+  new EventLoop({
+    mainThread: new Stack([
+      {
+        properties: {
+          innerText: 'console.log("Shopping for ingredients.");',
+        },
+      },
+      {
+        properties: {
+          innerText: 'fetch("http://grocery-store/shopping-list");',
         },
         enqueues: {
           microTasks: [
@@ -373,7 +483,7 @@ const eventLoop = new EventLoop({
             {
               properties: {
                 innerText:
-                  'setTimeout(() => fruitSalad.push("Sliced bananas"))',
+                  'setTimeout(() => fruitSalad.push("Sliced bananas"));',
               },
               enqueues: {
                 taskQueue: [
@@ -398,30 +508,31 @@ const eventLoop = new EventLoop({
             {
               properties: {
                 innerText:
-                  "requestAnimationFrame(() => console.log(fruitSalad))",
+                  "requestAnimationFrame(() => console.log(fruitSalad));",
               },
               enqueues: {
                 renderSteps: [
-                  { properties: { innerText: "console.log(fruitSalad)" } },
+                  { properties: { innerText: "console.log(fruitSalad);" } },
                 ],
               },
             },
           ],
         },
       },
-    ],
-    "mainThread"
-  ),
-});
+    ]),
+  }),
+];
 
-const callStack = eventLoop.frames;
+const frames = EXAMPLES[CURRENT_EXAMPLE].frames;
 
 function createElement(name, options) {
   const el = document.createElement("div");
   el.id = name;
   el.style.position = "absolute";
-  el.style.width = `${COL_SIZE}px`;
-  el.style.height = `${COL_SIZE}px`;
+  el.style.width = `${UNIT_SIZE * BLOCK_WIDTH - GUTTER}px`;
+  el.style.height = `${UNIT_SIZE * BLOCK_HEIGHT - GUTTER}px`;
+  el.style.padding = `${PADDING}px`;
+  el.style.borderRadius = `${BORDER_RADIUS}px`;
   applyProps(el, options);
   scene.appendChild(el);
   return el;
@@ -442,10 +553,10 @@ function applyProps(el, props = {}) {
   Object.entries(props).forEach(([name, value]) => {
     switch (name) {
       case "left":
-        el.style.left = `${value * COL_SIZE}px`;
+        el.style.left = `${value * UNIT_SIZE * BLOCK_WIDTH + PADDING}px`;
         break;
       case "top":
-        el.style.top = `${value * COL_SIZE}px`;
+        el.style.top = `${value * UNIT_SIZE * BLOCK_HEIGHT + PADDING}px`;
         break;
       case "innerText":
         el.innerText = value;
@@ -471,4 +582,4 @@ function animate(frames, index = 0) {
   }, duration);
 }
 
-showExample(callStack);
+showExample(frames);

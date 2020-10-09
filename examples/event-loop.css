@@ -1,0 +1,17 @@
+body,
+html {
+  margin: 0;
+}
+
+body {
+  color: #c3cfe3;
+  font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+  font-size: 14px;
+  width: 100%;
+  height: 985px;
+  position: relative;
+}
+
+* > * {
+  box-sizing: border-box;
+}
