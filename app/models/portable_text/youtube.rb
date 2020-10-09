@@ -10,6 +10,7 @@ class PortableText::Youtube
     iframe = content_tag :iframe, '', src: json["url"], class: iframe_classes
     content_tag :div,
                 iframe,
-                style: "padding-bottom: #{RATIO * 100}%", class: 'relative'
+                style: "padding-bottom: #{RATIO * 100}%",
+                class: 'relative youtube'
   end
 end
