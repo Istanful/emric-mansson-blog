@@ -6,7 +6,7 @@ class PostRepository
   end
 
   def public
-    query = "*[publishedAt<='#{Time.now.utc.iso8601}']"
+    query = "*[publishedAt<='#{Time.now.utc.iso8601}'] | order(publishedAt desc)"
     client.query(dataset, query)["result"]
           .map { |json| Post.new(json) }
   end
