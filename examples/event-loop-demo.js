@@ -10,7 +10,7 @@ const ROW_COUNT = 6;
 const CODE_BG_COLOR = "#31373e";
 const BACKGROUND_COLOR = "#282c34";
 const ROBOT_COLOR = "#98c379";
-const THREAD_NAMES = ["mainThread", "taskQueue", "renderSteps", "microTasks"];
+const THREAD_NAMES = ["jsStack", "taskQueue", "renderSteps", "microTasks"];
 const COL_COUNT = THREAD_NAMES.length;
 const CURRENT_EXAMPLE = parseInt(
   new URLSearchParams(window.location.search).get("exampleIndex") || "0"
@@ -36,8 +36,18 @@ function paintItem() {
   };
 }
 
+function callbackItem(text = "setTimeout callback") {
+  return {
+    properties: {
+      innerText: text,
+      background: "#61afee",
+      color: BACKGROUND_COLOR,
+    },
+  };
+}
+
 class Stack {
-  constructor(items, id = "mainThread", bgColor = CODE_BG_COLOR) {
+  constructor(items, id = "jsStack", bgColor = CODE_BG_COLOR) {
     this.id = id;
     this.bgColor = bgColor;
     this.items = items.map((item, i) => {
@@ -175,13 +185,14 @@ class Stack {
     this.items.splice(0, 1);
 
     if (consumedItem.enqueues) {
-      const [threadName, appendedFrames] = Object.entries(
-        consumedItem.enqueues
-      )[0];
-      newFrames = [
-        ...newFrames,
-        ...eventLoop.threads[threadName].appendFrames(appendedFrames),
-      ];
+      Object.entries(consumedItem.enqueues).forEach(
+        ([threadName, appendedFrames]) => {
+          newFrames = [
+            ...newFrames,
+            ...eventLoop.threads[threadName].appendFrames(appendedFrames),
+          ];
+        }
+      );
     }
 
     return newFrames;
@@ -274,7 +285,7 @@ class Robot {
 class EventLoop {
   constructor(threads) {
     this.threads = {
-      mainThread: new Stack([], "mainThread"),
+      jsStack: new Stack([], "jsStack"),
       taskQueue: new Stack([], "taskQueue"),
       renderSteps: new RenderStack([], "renderSteps"),
       microTasks: new Stack([], "microTasks"),
@@ -283,8 +294,8 @@ class EventLoop {
     this.robot = new Robot(this.threads);
   }
 
-  get mainThread() {
-    return this.threads.mainThread;
+  get jsStack() {
+    return this.threads.jsStack;
   }
 
   get taskQueue() {
@@ -304,14 +315,14 @@ class EventLoop {
       {
         duration: 500,
         items: {
-          ...this.mainThread.initialFrameItems,
+          ...this.jsStack.initialFrameItems,
           ...this.taskQueue.initialFrameItems,
           ...this.renderSteps.initialFrameItems,
           ...this.microTasks.initialFrameItems,
           robot: this.robot.initialFrameItem,
         },
       },
-      ...this.mainThread.fillFrames(),
+      ...this.jsStack.fillFrames(),
       ...this.taskQueue.fillFrames(),
       ...this.renderSteps.fillFrames(),
       ...this.microTasks.fillFrames(),
@@ -353,9 +364,9 @@ class EventLoop {
   }
 
   get consumeMainThreadFrames() {
-    const frames = this.mainThread.consumeFrames(this);
+    const frames = this.jsStack.consumeFrames(this);
 
-    if (this.mainThread.hasTasks) {
+    if (this.jsStack.hasTasks) {
       return [...frames, ...this.consumeMainThreadFrames];
     }
 
@@ -369,7 +380,7 @@ class EventLoop {
 
 const EXAMPLES = [
   new EventLoop({
-    mainThread: new Stack([
+    jsStack: new Stack([
       { properties: { innerText: 'console.log("Bring water to boil.");' } },
       {
         properties: {
@@ -381,21 +392,27 @@ const EXAMPLES = [
     ]),
   }),
   new EventLoop({
-    mainThread: new Stack([
+    jsStack: new Stack([
       { properties: { innerText: 'console.log("Bring water to boil.");' } },
       {
         properties: { innerText: 'console.log("Put in noodles and spice.");' },
       },
       {
         properties: {
-          innerText:
-            "setTimeout(() => {\n" +
-            '\t\tconsole.log("Serve noodles!");\n' +
-            "}, 5 * 60 * 1000);",
+          innerText: "setTimeout(/* ... */)",
         },
         enqueues: {
           taskQueue: [
-            { properties: { innerText: 'console.log("Serve noodles!");' } },
+            {
+              ...callbackItem(),
+              enqueues: {
+                jsStack: [
+                  {
+                    properties: { innerText: 'console.log("Serve noodles!");' },
+                  },
+                ],
+              },
+            },
           ],
         },
       },
@@ -407,66 +424,120 @@ const EXAMPLES = [
     ]),
   }),
   new EventLoop({
-    taskQueue: new Stack(
+    jsStack: new Stack(
       [
         {
           properties: { innerText: "moveBox();" },
           enqueues: {
             taskQueue: [
               {
-                properties: { innerText: "moveBox();" },
+                ...callbackItem(),
                 enqueues: {
-                  renderSteps: [paintItem()],
-                },
-              },
-            ],
-          },
-        },
-      ],
-      "taskQueue"
-    ),
-  }),
-  new EventLoop({
-    renderSteps: new Stack(
-      [
-        {
-          properties: { innerText: "moveBox();" },
-          enqueues: {
-            renderSteps: [
-              {
-                properties: { innerText: "moveBox();" },
-                enqueues: {
-                  renderSteps: [
-                    { properties: { innerText: "moveBox();" } },
-                    paintItem(),
+                  jsStack: [
+                    {
+                      properties: { innerText: "moveBox();" },
+                      enqueues: {
+                        taskQueue: [
+                          {
+                            ...callbackItem(),
+                            enqueues: {
+                              jsStack: [
+                                {
+                                  properties: { innerText: "moveBox();" },
+                                  enqueues: {
+                                    taskQueue: [
+                                      {
+                                        ...callbackItem(),
+                                        enqueues: {
+                                          jsStack: [
+                                            {
+                                              properties: {
+                                                innerText: "moveBox();",
+                                              },
+                                            },
+                                          ],
+                                        },
+                                      },
+                                    ],
+                                    renderSteps: [paintItem()],
+                                  },
+                                },
+                              ],
+                            },
+                          },
+                        ],
+                      },
+                    },
                   ],
                 },
               },
-              paintItem(),
             ],
           },
         },
-        paintItem(),
       ],
-      "renderSteps"
+      "jsStack"
     ),
   }),
   new EventLoop({
-    mainThread: new Stack([
+    jsStack: new Stack(
+      [
+        {
+          properties: {
+            innerText: "requestAnimationFrame(moveBox);",
+          },
+          enqueues: {
+            renderSteps: [
+              {
+                ...callbackItem("requestAnimationFrame callback"),
+                enqueues: {
+                  jsStack: [
+                    {
+                      properties: {
+                        innerText: "moveBox();",
+                      },
+                      enqueues: {
+                        renderSteps: [paintItem()],
+                      },
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      ],
+      "jsStack"
+    ),
+  }),
+  new EventLoop({
+    jsStack: new Stack([
       { properties: { innerText: 'console.log("Fetching articles...");' } },
       {
-        properties: { innerText: 'fetch("http://my-api.com/posts");' },
+        properties: {
+          innerText: 'fetch("http://my-api.com/posts")',
+        },
         enqueues: {
           microTasks: [
-            { properties: { innerText: "renderPosts(response);" } },
-            { properties: { innerText: 'console.log("Fetched articles.");' } },
+            {
+              ...callbackItem("microTask callback"),
+              enqueues: {
+                jsStack: [
+                  { properties: { innerText: "renderPosts(response);" } },
+                  {
+                    properties: {
+                      innerText: 'console.log("Fetched articles.");',
+                    },
+                  },
+                ],
+              },
+            },
           ],
         },
       },
     ]),
   }),
   new EventLoop({
-    mainThread: new Stack([
+    jsStack: new Stack([
       {
         properties: {
           innerText: 'console.log("Shopping for ingredients.");',
@@ -478,41 +549,71 @@ const EXAMPLES = [
         },
         enqueues: {
           microTasks: [
-            { properties: { innerText: "const fruitSalad = [];" } },
-            { properties: { innerText: 'console.log("Slicing bananas.");' } },
             {
-              properties: {
-                innerText:
-                  'setTimeout(() => fruitSalad.push("Sliced bananas"));',
-              },
+              ...callbackItem("microTask callback"),
               enqueues: {
-                taskQueue: [
+                jsStack: [
+                  { properties: { innerText: "const fruitSalad = [];" } },
                   {
                     properties: {
-                      innerText: 'fruitSalad.push("Sliced bananas");',
+                      innerText: 'console.log("Slicing bananas.");',
                     },
                   },
-                ],
-              },
-            },
-            {
-              properties: {
-                innerText: 'fruitSalad.push("Blueberries");',
-              },
-            },
-            {
-              properties: {
-                innerText: 'fruitSalad.push("Honey");',
-              },
-            },
-            {
-              properties: {
-                innerText:
-                  "requestAnimationFrame(() => console.log(fruitSalad));",
-              },
-              enqueues: {
-                renderSteps: [
-                  { properties: { innerText: "console.log(fruitSalad);" } },
+                  {
+                    properties: {
+                      innerText:
+                        'setTimeout(() => fruitSalad.push("Sliced bananas"));',
+                    },
+                    enqueues: {
+                      taskQueue: [
+                        {
+                          ...callbackItem(),
+                          enqueues: {
+                            jsStack: [
+                              {
+                                properties: {
+                                  innerText:
+                                    'fruitSalad.push("Sliced bananas");',
+                                },
+                              },
+                            ],
+                          },
+                        },
+                      ],
+                    },
+                  },
+                  {
+                    properties: {
+                      innerText: 'fruitSalad.push("Blueberries");',
+                    },
+                  },
+                  {
+                    properties: {
+                      innerText: 'fruitSalad.push("Honey");',
+                    },
+                  },
+                  {
+                    properties: {
+                      innerText:
+                        "requestAnimationFrame(() => console.log(fruitSalad));",
+                    },
+                    enqueues: {
+                      renderSteps: [
+                        {
+                          ...callbackItem("requestAnimationFrame callback"),
+                          enqueues: {
+                            jsStack: [
+                              {
+                                properties: {
+                                  innerText: "console.log(fruitSalad);",
+                                },
+                              },
+                            ],
+                          },
+                        },
+                      ],
+                    },
+                  },
                 ],
               },
             },
